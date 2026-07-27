@@ -143,4 +143,12 @@ npx wrangler deploy
 
 本项目采用 [MIT License](LICENSE) 协议开源。
 
-感谢 LINUX DO 社区开发者对本项目的支持 [**LINUX.DO**](https://linux.do)
+感谢 LINUX DO 社区开发者对本项目的支持
+<a href="https://linux.do?ref=seal-click" target="_blank" rel="noopener noreferrer" title="Powered by LINUX DO">
+  <img
+    src="https://linuxdo-seal.cuishushu.com/seals/seal-support-by.svg"
+    alt="SUPPORT by LINUX DO"
+    width="130"
+    height="55"
+  />
+</a>
