@@ -23,14 +23,12 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: 'cf-sub/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install Dependencies
-        working-directory: .
         run: npm ci
 
       - name: Run TypeScript Check
-        working-directory: .
         run: npm run typecheck
 
       - name: Deploy to Cloudflare Workers
@@ -39,4 +37,3 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: '.'
