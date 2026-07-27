@@ -948,13 +948,13 @@ export function renderWebUI(): string {
           } catch(e){}
         } else if (target === 'surge') {
           const surgeTypes = ['= ss,', '= socks5,', '= http,', '= trojan,', '= vmess,'];
-          nodeCount = text.split('\n').filter(function(l) {
+          nodeCount = text.split('\\n').filter(function(l) {
             const t = l.trim();
             if (!t || t[0] === '[' || t[0] === '#' || t[0] === ';') return false;
             return surgeTypes.some(function(k) { return t.indexOf(k) !== -1; });
           }).length;
         } else {
-          nodeCount = text.split('\n').filter(function(l) {
+          nodeCount = text.split('\\n').filter(function(l) {
             const t = l.trim();
             return t && t[0] !== '[' && t[0] !== '#';
           }).length;
