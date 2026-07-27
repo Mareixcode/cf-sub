@@ -144,17 +144,19 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
       const headers: Record<string, string> = {
         'Content-Type': transformResult.contentType,
         'Cache-Control': 'public, max-age=300',
+        // 允许浏览器跨域读取（UI 调试页面 fetch 同源，但明确声明更安全）
+        'Access-Control-Allow-Origin': '*',
+        // 必须显式暴露自定义响应头，否则浏览器 JS 无法读取
+        'Access-Control-Expose-Headers': 'subscription-userinfo, Subscription-Userinfo, profile-update-interval, Profile-Update-Interval',
       };
 
       // 原样透传剩余流量与更新间隔 Response Headers
       if (subResult.userinfo) {
         headers['subscription-userinfo'] = subResult.userinfo;
-        headers['Subscription-Userinfo'] = subResult.userinfo;
       }
 
       if (subResult.profileUpdateInterval) {
         headers['profile-update-interval'] = subResult.profileUpdateInterval;
-        headers['Profile-Update-Interval'] = subResult.profileUpdateInterval;
       }
 
       return new Response(transformResult.content, {

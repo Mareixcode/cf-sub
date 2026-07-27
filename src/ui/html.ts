@@ -500,7 +500,7 @@ export function renderWebUI(): string {
     }
   </style>
 </head>
-<body class="theme-fluxgrid">
+<body>
   <canvas id="particle-bg" aria-hidden="true"></canvas>
 
   <div class="site-shell">
@@ -638,7 +638,7 @@ export function renderWebUI(): string {
         <!-- Traffic Stats Box -->
         <div id="trafficBox" class="traffic-card" style="display: none;">
           <div class="traffic-header">
-            <span>📊 机场订阅流量状况</span>
+            <span>机场订阅流量状况</span>
             <span id="trafficUsagePercent">0%</span>
           </div>
           <div class="progress-bar-bg">
@@ -653,7 +653,7 @@ export function renderWebUI(): string {
 
         <div class="inspector-header">
           <span class="pill pill-blue" id="statNodes">节点数: -</span>
-          <span class="pill pill-green" id="statExit">出口节点: 🏠 家宽出口</span>
+          <span class="pill pill-green" id="statExit">出口节点: 家宽出口</span>
           <span class="pill" id="statClient">目标格式: Clash</span>
         </div>
 
@@ -888,15 +888,24 @@ export function renderWebUI(): string {
 
       try {
         const res = await fetch(url);
+
+        // 必须先读取 body（只能消费一次），再处理 headers 和内容
+        const text = await res.text();
+
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || ('HTTP Error ' + res.status));
+          let errMsg = 'HTTP Error ' + res.status;
+          try {
+            const errData = JSON.parse(text);
+            if (errData && errData.message) errMsg = errData.message;
+          } catch(e) {}
+          throw new Error(errMsg);
         }
 
         // 解析流量 Response Header
-        const userinfo = res.headers.get('subscription-userinfo') || res.headers.get('Subscription-Userinfo');
+        // 需要 Worker 端设置 Access-Control-Expose-Headers 才能在浏览器端读取
+        const userinfo = res.headers.get('subscription-userinfo');
         if (userinfo) {
-          const params = new URLSearchParams(userinfo.replace(/;/g, '&'));
+          const params = new URLSearchParams(userinfo.replace(/;\s*/g, '&'));
           const upload = parseInt(params.get('upload') || '0', 10);
           const download = parseInt(params.get('download') || '0', 10);
           const total = parseInt(params.get('total') || '0', 10);
@@ -909,10 +918,10 @@ export function renderWebUI(): string {
           document.getElementById('trafficProgressFill').style.width = percent + '%';
           document.getElementById('trafficUsed').textContent = '已用: ' + formatBytes(used);
           document.getElementById('trafficTotal').textContent = '总共: ' + (total > 0 ? formatBytes(total) : '无限制');
-          
+
           if (expire > 0) {
             const expDate = new Date(expire * 1000);
-            document.getElementById('trafficExpire').textContent = '到期时间: ' + expDate.toLocaleDateString();
+            document.getElementById('trafficExpire').textContent = '到期时间: ' + expDate.toLocaleDateString('zh-CN');
           } else {
             document.getElementById('trafficExpire').textContent = '到期时间: 长期有效';
           }
@@ -921,25 +930,30 @@ export function renderWebUI(): string {
           trafficBox.style.display = 'none';
         }
 
-        const text = await res.text();
         yamlPreview.textContent = text;
 
         // 计算节点数
         let nodeCount = 0;
         if (target === 'clash') {
-          nodeCount = (text.match(/- name:/g) || []).length;
+          nodeCount = (text.match(/^- name:/gm) || []).length;
         } else if (target === 'singbox') {
           try {
             const parsed = JSON.parse(text);
-            nodeCount = (parsed.outbounds || []).length;
+            // 只统计真实节点（排除 selector/direct/block/dns 等内置出站）
+            const builtinTypes = new Set(['selector', 'direct', 'block', 'dns', 'urltest', 'fallback', 'loadbalance']);
+            nodeCount = (parsed.outbounds || []).filter(o => !builtinTypes.has(o.type)).length;
           } catch(e){}
+        } else if (target === 'surge') {
+          // Surge 每个代理行格式: name = type, ...
+          nodeCount = text.split('\n').filter(l => /^[^\[#;].*=\s*(ss|socks5|http|trojan|vmess)/.test(l.trim())).length;
         } else {
-          nodeCount = text.split('\n').filter(l => l.trim()).length;
+          // Quanx / Base64 等：按非空行计数
+          nodeCount = text.split('\n').filter(l => l.trim() && !l.startsWith('[') && !l.startsWith('#')).length;
         }
         document.getElementById('statNodes').textContent = '节点数: ' + nodeCount;
 
       } catch (err) {
-        yamlPreview.textContent = '❌ 在线解析测试失败: ' + err.message;
+        yamlPreview.textContent = '[在线解析测试失败] ' + (err.message || err);
       }
     }
 
