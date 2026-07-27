@@ -21,6 +21,8 @@ export function renderWebUI(): string {
       --body: #cbd5e1;
       --muted: #9ca3af;
       --muted-2: #64748b;
+      --card-bg: rgba(17, 24, 39, 0.72);
+      --header-bg: rgba(11, 15, 20, 0.85);
       --input-bg: #0b1220;
       --blue: #3b82f6;
       --blue-2: #2563eb;
@@ -50,6 +52,8 @@ export function renderWebUI(): string {
       --body: #334155;
       --muted: #64748b;
       --muted-2: #94a3b8;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --header-bg: rgba(248, 250, 252, 0.85);
       --input-bg: #f1f5f9;
       --shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
     }
@@ -101,7 +105,7 @@ export function renderWebUI(): string {
     .site-header {
       position: sticky;
       top: 0;
-      background: rgba(11, 15, 20, 0.85);
+      background: var(--header-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border-soft);
@@ -240,6 +244,11 @@ export function renderWebUI(): string {
       transition: var(--transition);
     }
 
+    select option {
+      background: var(--card);
+      color: var(--text);
+    }
+
     input:focus, select:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
@@ -337,14 +346,20 @@ export function renderWebUI(): string {
       font-family: var(--mono);
       font-size: 0.8125rem;
       color: var(--blue-light);
-      word-break: break-all;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      overflow: hidden;
     }
 
-    /* Traffic Stats Card */
+    .output-box-text {
+      flex: 1;
+      min-width: 0;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+    }
+
     .traffic-card {
       background: var(--card-2);
       border: 1px solid var(--border-soft);
@@ -529,11 +544,11 @@ export function renderWebUI(): string {
           <div class="field-group" style="margin-bottom: 0;">
             <label for="targetClient">目标客户端 (Target Client)</label>
             <select id="targetClient">
-              <option value="clash" selected>⚡ Clash / Mihomo (YAML)</option>
-              <option value="singbox">📦 Sing-box (JSON)</option>
-              <option value="surge">⚡ Surge (.conf)</option>
-              <option value="quanx">🛡️ Quantumult X</option>
-              <option value="shadowrocket">🚀 Shadowrocket / Base64</option>
+              <option value="clash" selected>Clash / Mihomo (YAML)</option>
+              <option value="singbox">Sing-box (JSON)</option>
+              <option value="surge">Surge (.conf)</option>
+              <option value="quanx">Quantumult X</option>
+              <option value="shadowrocket">Shadowrocket / Base64</option>
             </select>
           </div>
 
@@ -560,7 +575,7 @@ export function renderWebUI(): string {
                 <line x1="6" y1="6" x2="6.01" y2="6"></line>
                 <line x1="6" y1="18" x2="6.01" y2="18"></line>
               </svg>
-              显示/配置家宽节点明文参数 (隐蔽模式：默认留空从 Worker 环境变量读取)
+              显示/配置家宽节点明文参数 (默认留空从 Worker 环境变量读取)
             </span>
             <span id="socksChevron">▼</span>
           </button>
@@ -598,7 +613,7 @@ export function renderWebUI(): string {
         <div id="resultSection" style="margin-top: 1.75rem; display: none;">
           <label style="margin-bottom: 0.5rem; display: block;">生成的订阅转换地址：</label>
           <div class="output-box">
-            <span id="finalUrl"></span>
+            <span id="finalUrl" class="output-box-text"></span>
             <button class="btn btn-secondary" style="padding: 0.4rem 0.875rem; font-size: 0.75rem;" onclick="copyResultLink()">复制链接</button>
           </div>
 
@@ -637,7 +652,7 @@ export function renderWebUI(): string {
         </div>
 
         <div class="inspector-header">
-          <span class="pill pill-blue" id="statNodes">前置节点: -</span>
+          <span class="pill pill-blue" id="statNodes">节点数: -</span>
           <span class="pill pill-green" id="statExit">出口节点: 🏠 家宽出口</span>
           <span class="pill" id="statClient">目标格式: Clash</span>
         </div>
@@ -662,10 +677,18 @@ export function renderWebUI(): string {
   <div id="toast" class="toast">已成功复制到剪贴板！</div>
 
   <script>
+    function getSystemTheme() {
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const current = document.documentElement.getAttribute('data-theme') || getSystemTheme();
       const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
+      applyTheme(next);
       try { localStorage.setItem('cf_sub_theme', next); } catch (e) {}
     }
 
@@ -673,10 +696,24 @@ export function renderWebUI(): string {
       try {
         const stored = localStorage.getItem('cf_sub_theme');
         if (stored === 'dark' || stored === 'light') {
-          document.documentElement.setAttribute('data-theme', stored);
+          applyTheme(stored);
+        } else {
+          applyTheme(getSystemTheme());
         }
-      } catch (e) {}
+      } catch (e) {
+        applyTheme(getSystemTheme());
+      }
+
+      // 实时监听系统主题模式切换并保持一致
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          if (!localStorage.getItem('cf_sub_theme')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
     })();
+
 
     /* YTBlog-Theme Particle Background Engine */
     (function initParticles() {
@@ -798,19 +835,19 @@ export function renderWebUI(): string {
       const importBtn = document.getElementById('clientImportBtn');
       if (target === 'clash') {
         importBtn.href = 'clash://install-config?url=' + encodeURIComponent(url);
-        importBtn.textContent = '⚡ 一键导入 Clash 客户端';
+        importBtn.textContent = '一键导入 Clash';
       } else if (target === 'singbox') {
         importBtn.href = 'sing-box://import-remote-profile?url=' + encodeURIComponent(url);
-        importBtn.textContent = '📦 一键导入 Sing-box 客户端';
+        importBtn.textContent = '一键导入 Sing-box';
       } else if (target === 'surge') {
         importBtn.href = 'surge:///install-config?url=' + encodeURIComponent(url);
-        importBtn.textContent = '⚡ 一键导入 Surge 客户端';
+        importBtn.textContent = '一键导入 Surge';
       } else if (target === 'shadowrocket') {
         importBtn.href = 'sub://' + btoa(url);
-        importBtn.textContent = '🚀 一键导入 Shadowrocket 客户端';
+        importBtn.textContent = '一键导入 Shadowrocket';
       } else {
         importBtn.href = url;
-        importBtn.textContent = '📋 打开订阅源';
+        importBtn.textContent = '打开订阅源';
       }
 
       document.getElementById('resultSection').style.display = 'block';
@@ -821,7 +858,7 @@ export function renderWebUI(): string {
       const text = document.getElementById('finalUrl').textContent;
       if (!text) return;
       navigator.clipboard.writeText(text).then(() => {
-        showToast('已复制订阅链接到剪贴板！');
+        showToast('已复制链接到剪贴板！');
       });
     }
 
@@ -886,6 +923,20 @@ export function renderWebUI(): string {
 
         const text = await res.text();
         yamlPreview.textContent = text;
+
+        // 计算节点数
+        let nodeCount = 0;
+        if (target === 'clash') {
+          nodeCount = (text.match(/- name:/g) || []).length;
+        } else if (target === 'singbox') {
+          try {
+            const parsed = JSON.parse(text);
+            nodeCount = (parsed.outbounds || []).length;
+          } catch(e){}
+        } else {
+          nodeCount = text.split('\n').filter(l => l.trim()).length;
+        }
+        document.getElementById('statNodes').textContent = '节点数: ' + nodeCount;
 
       } catch (err) {
         yamlPreview.textContent = '❌ 在线解析测试失败: ' + err.message;
