@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cf-cub",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-04",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "SOCKS_SERVER": "127.0.0.1",
+    "SOCKS_PORT": "1080",
+    "SOCKS_USERNAME": "your_username",
+    "SOCKS_PASSWORD": "your_password"
+  }
+}
