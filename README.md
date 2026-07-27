@@ -1,8 +1,8 @@
-# Cloudflare Workers Subscription Converter & SOCKS5 Chain Proxy (cf-cub)
+# Cloudflare Workers Subscription Converter & SOCKS5 Chain Proxy (cf-sub)
 
 一个部署在 **Cloudflare Workers** 的开源机场订阅转换服务与 SOCKS5 链式代理 Exit 节点注入工具。
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Mareixcode/cf-cub)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Mareixcode/cf-sub)
 [![License: MIT](https://img.shields.com/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.com/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
 [![Cloudflare Workers](https://img.shields.com/badge/Cloudflare-Workers-orange)](https://workers.cloudflare.com/)
@@ -17,7 +17,7 @@
 
 点击下方按钮，登录 Cloudflare 网页上一键自动完成部署：
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Mareixcode/cf-cub)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Mareixcode/cf-sub)
 
 ---
 
@@ -26,8 +26,8 @@
 复制粘贴以下 3 行命令：
 
 ```bash
-git clone https://github.com/Mareixcode/cf-cub.git
-cd cf-cub && npm install
+git clone https://github.com/Mareixcode/cf-sub.git
+cd cf-sub && npm install
 npx wrangler deploy
 ```
 

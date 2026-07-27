@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "cf-cub",
+  "name": "cf-sub",
   "main": "src/index.ts",
   "compatibility_date": "2025-02-04",
   "compatibility_flags": [
