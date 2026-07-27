@@ -911,7 +911,7 @@ export function renderWebUI(): string {
         // 需要 Worker 端设置 Access-Control-Expose-Headers 才能在浏览器端读取
         const userinfo = res.headers.get('subscription-userinfo');
         if (userinfo) {
-          const params = new URLSearchParams(userinfo.replace(/;\s*/g, '&'));
+          const params = new URLSearchParams(userinfo.replace(/; */g, '&'));
           const upload = parseInt(params.get('upload') || '0', 10);
           const download = parseInt(params.get('download') || '0', 10);
           const total = parseInt(params.get('total') || '0', 10);
@@ -945,16 +945,23 @@ export function renderWebUI(): string {
         } else if (target === 'singbox') {
           try {
             const parsed = JSON.parse(text);
-            // 只统计真实节点（排除 selector/direct/block/dns 等内置出站）
-            const builtinTypes = new Set(['selector', 'direct', 'block', 'dns', 'urltest', 'fallback', 'loadbalance']);
-            nodeCount = (parsed.outbounds || []).filter(o => !builtinTypes.has(o.type)).length;
+            const builtinTypes = ['selector', 'direct', 'block', 'dns', 'urltest', 'fallback', 'loadbalance'];
+            nodeCount = (parsed.outbounds || []).filter(function(o) { return builtinTypes.indexOf(o.type) === -1; }).length;
           } catch(e){}
         } else if (target === 'surge') {
-          // Surge 每个代理行格式: name = type, ...
-          nodeCount = text.split('\n').filter(l => /^[^\[#;].*=\s*(ss|socks5|http|trojan|vmess)/.test(l.trim())).length;
+          // Surge 代理行: 包含 = ss / socks5 / http / trojan / vmess 关键字
+          const surgeTypes = ['= ss,', '= socks5,', '= http,', '= trojan,', '= vmess,'];
+          nodeCount = text.split('\n').filter(function(l) {
+            const t = l.trim();
+            if (!t || t[0] === '[' || t[0] === '#' || t[0] === ';') return false;
+            return surgeTypes.some(function(k) { return t.indexOf(k) !== -1; });
+          }).length;
         } else {
           // Quanx / Base64 等：按非空行计数
-          nodeCount = text.split('\n').filter(l => l.trim() && !l.startsWith('[') && !l.startsWith('#')).length;
+          nodeCount = text.split('\n').filter(function(l) {
+            const t = l.trim();
+            return t && t[0] !== '[' && t[0] !== '#';
+          }).length;
         }
         document.getElementById('statNodes').textContent = '节点数: ' + nodeCount;
 

@@ -1,12 +1,30 @@
 # 🚀 Cloudflare Workers Multi-Client Subscription Converter & Chain Proxy (`cf-sub`)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
-  <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
+  <a href="https://workers.cloudflare.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
+  </a>
+  <a href="https://www.typescriptlang.org/" target="_blank">
+    <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-4CAF50?style=flat-square&logo=open-source-initiative&logoColor=white" alt="License" />
+  </a>
+  <a href="https://github.com/Mareixcode/cf-cub">
+    <img src="https://img.shields.io/github/stars/Mareixcode/cf-cub?style=flat-square&logo=github" alt="GitHub Stars" />
+  </a>
+  <a href="https://github.com/Mareixcode/cf-cub/commits/main">
+    <img src="https://img.shields.io/github/last-commit/Mareixcode/cf-cub?style=flat-square&logo=git&logoColor=white" alt="Last Commit" />
+  </a>
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Clash%20%2F%20Mihomo-Supported-41B883?style=flat-square&logo=v2ray&logoColor=white" alt="Clash / Mihomo" />
+  <img src="https://img.shields.io/badge/Sing--box-Supported-009688?style=flat-square&logo=box&logoColor=white" alt="Sing-box" />
+  <img src="https://img.shields.io/badge/Surge-Supported-0088CC?style=flat-square&logo=telegram&logoColor=white" alt="Surge" />
+  <img src="https://img.shields.io/badge/Shadowrocket-Supported-E91E63?style=flat-square&logo=rocket&logoColor=white" alt="Shadowrocket" />
 </p>
 
-> ⚡ 一个完全部署在 **Cloudflare Workers (Module Worker)** 的多客户端开源机场订阅转换服务与全协议家宽链式代理 (Exit Proxy / `dialer-proxy` / `detour` / `under-proxy`) 节点注入工具。
+> ⚡ 一个部署在 **Cloudflare Workers** 的多客户端开源机场订阅转换服务与全协议家宽链式代理 (Exit Proxy / `dialer-proxy` / `detour` / `under-proxy`) 节点注入工具。
 
 ---
 
@@ -14,7 +32,7 @@
 
 `cf-sub` 旨在将标准的机场节点订阅转化为支持多客户端格式（**Clash / Mihomo**、**Sing-box**、**Surge**、**Quantumult X**、**Shadowrocket**）的配置。通过为机场节点自动附加后置家宽代理（支持 SOCKS5, HTTP, HTTPS, SS, Trojan, VLESS 出口），用户能够以家宽 IP 作为终点出口访问网络，同时保留机场原生节点的高速传输能力与原有客户端的复杂分流策略。
 
-无需自建服务器，利用 Cloudflare Workers 的边缘无服务器架构，毫秒级响应且全免费部署。
+无需自建服务器，利用 Cloudflare Workers 的边缘无服务器架构，全免费部署。
 
 ---
 
@@ -59,8 +77,8 @@
 
 ```bash
 # 1. 克隆项目仓库
-git clone https://github.com/Mareixcode/cf-sub.git
-cd cf-sub
+git clone https://github.com/Mareixcode/cf-cub.git
+cd cf-cub
 
 # 2. 安装依赖
 npm install
