@@ -18,13 +18,13 @@
   </a>
 </p>
 
-> ⚡ 一个多客户端开源机场订阅转换服务与全协议家宽链式代理节点注入工具。
+> ⚡ 一个多客户端机场订阅转换工具与家宽链式代理节点注入工具
 
 ---
 
 ## 📖 项目简介
 
-`cf-sub` 可以将标准的机场节点订阅转化为支持多客户端格式（**Clash / Mihomo**、**Sing-box**、**Surge**、**Quantumult X**、**Shadowrocket**）的配置。为机场节点自动附加后置家宽代理（支持 SOCKS5, HTTP, HTTPS, SS, Trojan, VLESS 出口），以家宽 IP 作为终点出口，同时保留机场原生节点与原有的复杂分流策略。
+`cf-sub` 可以将标准的机场节点订阅转化为支持多客户端格式（**Clash / Mihomo**、**Sing-box**、**Surge**、**Quantumult X**、**Shadowrocket**）的配置。为机场节点自动附加后置家宽代理（支持 SOCKS5, HTTP, HTTPS, SS, Trojan, VLESS 出口），以家宽 IP 作为终点出口，同时保留机场原生节点与原有的分流策略。
 
 ---
 
@@ -85,7 +85,7 @@ npx wrangler deploy
 
 ### 方法 A：使用 Web UI 界面
 
-打开部署好的 Worker 网址，填入机场订阅，选择目标客户端与家宽出口协议（若家宽信息已配置在环境变量中，可保持留空），点击**生成订阅链接**或**一键导入客户端**。
+填入机场订阅，选择目标客户端与家宽出口协议（若家宽信息已配置在环境变量中，可保持留空），点击**生成订阅链接**或**一键导入客户端**。
 
 ### 方法 B：Cloudflare 后台环境变量配置 (推荐)
 
@@ -112,11 +112,9 @@ npx wrangler deploy
 
 ---
 
-## 🙏 致谢 (Credits & Acknowledgments)
+## 🙏 致谢
 
-本项目在开发与协议转换架构设计过程中，灵感与规则借鉴并致谢以下优秀的开源项目：
-
-- **[tindy2013/subconverter](https://github.com/tindy2013/subconverter)** -强大的全功能订阅转换工具与客户端转换
+- **[tindy2013/subconverter](https://github.com/tindy2013/subconverter)** -订阅转换工具与客户端转换
 - **[Metacubex/mihomo](https://github.com/Metacubex/mihomo)** - Clash Meta 内核
 - **[SagerNet/sing-box](https://github.com/SagerNet/sing-box)** - 网络代理工具
 - **[Loyalsoldier/clash-rules](https://github.com/Loyalsoldier/clash-rules)** - 分流规则集
@@ -124,9 +122,25 @@ npx wrangler deploy
 
 ---
 
+## ⚠️ 免责声明 (Disclaimer)
+
+1. **仅供学习交流**：本项目（`cf-sub`）仅供网络技术研究、开源代码学习及个人测试使用，请勿用于任何违反所在国家或地区法律法规的用途。
+2. **风险自负**：使用者在部署和使用本项目时，应自行承担相关风险。开发者不对因使用、复制、修改或分发本软件而产生的任何直接或间接损失、法律纠纷、设备故障或安全后果承担任何责任。
+3. **第三方服务**：本项目依赖 Cloudflare Workers 及第三方订阅节点，第三方服务的稳定性、安全性及合法性由对应服务提供方负责，本项目不做任何形式的保证或担保。
+4. **合规使用**：请使用者严格遵守所在国家/地区的法律法规及网络管理规定，如因违规使用产生任何法律后果，均由使用者自行承担，与本项目开发者无关。
+
+---
+
+## 📬 联系方式
+
+* ​**开发者**​: MareixHunk
+* ​**Email**​: [ceohunk@gmail.com](mailto:ceohunk@gmail.com)
+* ​**GitHub**​: [MareixHunk](https://github.com/Mareixcode)
+
+---
+
 ## 📄 开源协议
 
 本项目采用 [MIT License](LICENSE) 协议开源。
 
-​感谢LINUXDO社区开发者对本项目的支持​ [**LINUX.DO**](https://linux.do)
-
+感谢 LINUX DO 社区开发者对本项目的支持 [**LINUX.DO**](https://linux.do)
