@@ -1,7 +1,7 @@
 {
-  "name": "cf-cub",
+  "name": "cf-sub",
   "version": "1.0.0",
-  "description": "Cloudflare Workers Subscription Converter & SOCKS5 Chain Proxy Exit",
+  "description": "Cloudflare Workers Subscription Converter & SOCKS5 Chain Proxy",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {

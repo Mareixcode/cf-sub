@@ -4,13 +4,23 @@ export function renderWebUI(): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CF-Cub - 订阅转换 & SOCKS5 链式代理控制台</title>
+  <title>CF-Sub - 机场订阅转换 & 链式代理</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- 主题初始化：放在 head 内立即执行，防止页面闪烁（FOUC） -->
+  <script>
+    (function() {
+      function getSysTheme() {
+        return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      var stored;
+      try { stored = localStorage.getItem('cf_sub_theme'); } catch(e) {}
+      document.documentElement.setAttribute('data-theme', (stored === 'dark' || stored === 'light') ? stored : getSysTheme());
+    })();
+  </script>
   <style>
     :root {
-      /* YTBlog-Theme (Fluxgrid) Official Color & Layout Tokens */
       --bg: #0b0f14;
       --bg-soft: #0f1621;
       --card: #111827;
@@ -81,7 +91,6 @@ export function renderWebUI(): string {
       position: relative;
     }
 
-    /* YTBlog-Theme Particle Background Canvas */
     #particle-bg {
       position: fixed;
       top: 0;
@@ -108,7 +117,6 @@ export function renderWebUI(): string {
       margin: 0 auto;
     }
 
-    /* YTBlog-Theme Header Navbar */
     .site-header {
       position: sticky;
       top: 0;
@@ -155,6 +163,25 @@ export function renderWebUI(): string {
       gap: 0.75rem;
     }
 
+    .github-link-icon {
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-soft);
+      background: var(--card);
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .github-link-icon:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
     .theme-toggle {
       background: var(--card);
       border: 1px solid var(--border-soft);
@@ -179,11 +206,10 @@ export function renderWebUI(): string {
     html[data-theme="light"] .icon-sun { display: none; }
     html[data-theme="light"] .icon-moon { display: block; }
 
-    /* YTBlog-Theme Card Component */
     .flux-card {
       background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border-soft);
       border-radius: var(--radius);
       padding: 2rem;
@@ -206,7 +232,6 @@ export function renderWebUI(): string {
       gap: 0.625rem;
     }
 
-    /* Form Fields */
     .field-group {
       margin-bottom: 1.25rem;
     }
@@ -221,25 +246,29 @@ export function renderWebUI(): string {
       letter-spacing: 0.04em;
     }
 
-    input[type="text"], input[type="number"], input[type="password"] {
+    input[type="text"], input[type="number"], input[type="password"], select {
       width: 100%;
       background: var(--input-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 0.8125rem 1rem;
       color: var(--text);
-      font-family: var(--mono);
+      font-family: var(--font);
       font-size: 0.875rem;
       outline: none;
       transition: var(--transition);
     }
 
-    input:focus {
+    select option {
+      background: var(--card);
+      color: var(--text);
+    }
+
+    input:focus, select:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
-    /* Collapsible Socks Panel */
     .socks-toggle-btn {
       background: var(--card-2);
       border: 1px solid var(--border-soft);
@@ -269,7 +298,6 @@ export function renderWebUI(): string {
       border-top: 1px dashed var(--border-soft);
     }
 
-    /* Buttons */
     .btn-group {
       display: flex;
       gap: 0.875rem;
@@ -325,7 +353,6 @@ export function renderWebUI(): string {
       background: rgba(59, 130, 246, 0.1);
     }
 
-    /* Output Section */
     .output-box {
       background: var(--input-bg);
       border: 1px solid var(--border);
@@ -334,11 +361,60 @@ export function renderWebUI(): string {
       font-family: var(--mono);
       font-size: 0.8125rem;
       color: var(--blue-light);
-      word-break: break-all;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      overflow: hidden;
+    }
+
+    .output-box-text {
+      flex: 1;
+      min-width: 0;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+    }
+
+    .traffic-card {
+      background: var(--card-2);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .traffic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--heading);
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      width: 100%;
+      background: var(--input-bg);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .traffic-details {
+      display: flex;
+      gap: 1.5rem;
+      font-size: 0.8125rem;
+      color: var(--muted);
+      flex-wrap: wrap;
     }
 
     /* Inspector Code Box */
@@ -383,7 +459,6 @@ export function renderWebUI(): string {
       line-height: 1.6;
     }
 
-    /* Toast Notification */
     .toast {
       position: fixed;
       bottom: 2.5rem;
@@ -409,27 +484,55 @@ export function renderWebUI(): string {
 
     footer {
       text-align: center;
-      padding: 2rem 0;
-      font-size: 0.8125rem;
-      color: var(--muted-2);
+      padding: 2.5rem 0 2rem 0;
       margin-top: auto;
+    }
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-github-link {
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .footer-github-link:hover {
+      color: var(--blue);
+    }
+
+    .footer-subtitle {
+      font-size: 0.75rem;
+      color: var(--muted-2);
     }
   </style>
 </head>
-<body class="theme-fluxgrid">
-  <!-- YTBlog-Theme Particle Background Canvas -->
+<body>
   <canvas id="particle-bg" aria-hidden="true"></canvas>
 
   <div class="site-shell">
-    <!-- YTBlog-Theme Header Navbar -->
     <header class="site-header">
       <div class="flux-container header-inner">
         <a class="brand" href="/">
           <span class="brand-mark"></span>
-          <span class="brand-text">Almighty.CF-Cub</span>
+          <span class="brand-text">CF-Sub</span>
         </a>
 
         <div class="header-actions">
+          <a class="github-link-icon" href="https://github.com/Mareixcode/cf-sub" target="_blank" rel="noopener noreferrer" aria-label="GitHub Repository">
+            <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+            </svg>
+          </a>
           <button type="button" class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="切换明暗主题">
             <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
             <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -438,7 +541,6 @@ export function renderWebUI(): string {
       </div>
     </header>
 
-    <!-- Main Container -->
     <main class="flux-container">
       <div class="flux-card">
         <h2 class="card-title">
@@ -446,7 +548,7 @@ export function renderWebUI(): string {
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
           </svg>
-          基础订阅链接配置
+          多客户端订阅转换配置
         </h2>
 
         <div class="field-group">
@@ -454,8 +556,33 @@ export function renderWebUI(): string {
           <input type="text" id="subUrl" placeholder="https://example.com/sub?target=clash" value="">
         </div>
 
-        <!-- Custom SOCKS5 Panel -->
-        <div style="margin-top: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="field-group" style="margin-bottom: 0;">
+            <label for="targetClient">目标客户端 (Target Client)</label>
+            <select id="targetClient">
+              <option value="clash" selected>Clash / Mihomo (YAML)</option>
+              <option value="singbox">Sing-box (JSON)</option>
+              <option value="surge">Surge (.conf)</option>
+              <option value="quanx">Quantumult X</option>
+              <option value="shadowrocket">Shadowrocket / Base64</option>
+            </select>
+          </div>
+
+          <div class="field-group" style="margin-bottom: 0;">
+            <label for="socksType">家宽 Exit 出口协议</label>
+            <select id="socksType">
+              <option value="socks5" selected>SOCKS5 (默认)</option>
+              <option value="http">HTTP</option>
+              <option value="https">HTTPS (TLS)</option>
+              <option value="ss">Shadowsocks</option>
+              <option value="trojan">Trojan</option>
+              <option value="vless">VLESS</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom Exit Panel -->
+        <div style="margin-top: 1.25rem;">
           <button type="button" class="socks-toggle-btn" onclick="toggleSocksPanel()">
             <span style="display: flex; align-items: center; gap: 0.5rem;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2">
@@ -464,32 +591,31 @@ export function renderWebUI(): string {
                 <line x1="6" y1="6" x2="6.01" y2="6"></line>
                 <line x1="6" y1="18" x2="6.01" y2="18"></line>
               </svg>
-              自定义家宽 Exit SOCKS5 节点参数 (可选)
+              显示/配置家宽节点明文参数 (默认留空从 Worker 环境变量读取)
             </span>
             <span id="socksChevron">▼</span>
           </button>
 
           <div id="socksPanel" class="socks-panel" style="display: none;">
             <div class="field-group">
-              <label for="socksServer">SOCKS5 服务器 IP/域名</label>
-              <input type="text" id="socksServer" placeholder="留空使用默认环境配置">
+              <label for="socksServer">服务器 IP/域名</label>
+              <input type="text" id="socksServer" placeholder="留空使用环境变量">
             </div>
             <div class="field-group">
               <label for="socksPort">端口</label>
-              <input type="number" id="socksPort" placeholder="留空使用默认环境配置">
+              <input type="number" id="socksPort" placeholder="留空使用环境变量">
             </div>
             <div class="field-group">
-              <label for="socksUser">认证用户名</label>
-              <input type="text" id="socksUser" placeholder="留空使用默认环境配置">
+              <label for="socksUser">用户名 / Cipher</label>
+              <input type="text" id="socksUser" placeholder="留空使用环境变量">
             </div>
             <div class="field-group">
-              <label for="socksPass">认证密码</label>
-              <input type="password" id="socksPass" placeholder="留空使用默认环境配置">
+              <label for="socksPass">密码 / UUID</label>
+              <input type="password" id="socksPass" placeholder="留空使用环境变量">
             </div>
           </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="btn-group">
           <button class="btn btn-primary" onclick="generateLink()">
             生成订阅转换链接
@@ -501,34 +627,50 @@ export function renderWebUI(): string {
 
         <!-- Output Result Box -->
         <div id="resultSection" style="margin-top: 1.75rem; display: none;">
-          <label style="margin-bottom: 0.5rem; display: block;">生成的 Clash 订阅转换地址：</label>
+          <label style="margin-bottom: 0.5rem; display: block;">生成的订阅转换地址：</label>
           <div class="output-box">
-            <span id="finalUrl"></span>
+            <span id="finalUrl" class="output-box-text"></span>
             <button class="btn btn-secondary" style="padding: 0.4rem 0.875rem; font-size: 0.75rem;" onclick="copyResultLink()">复制链接</button>
           </div>
 
           <div class="btn-group" style="margin-top: 1.25rem;">
-            <a id="clashImportBtn" href="#" class="btn btn-outline" target="_blank">
-              一键导入 Clash 客户端
+            <a id="clientImportBtn" href="#" class="btn btn-outline" target="_blank">
+              一键导入客户端
             </a>
           </div>
         </div>
       </div>
 
-      <!-- Inspector Output Card -->
+      <!-- Traffic Section & Inspector -->
       <section id="inspectorCard" class="flux-card" style="display: none;">
         <h3 class="card-title">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2">
             <polyline points="16 18 22 12 16 6"></polyline>
             <polyline points="8 6 2 12 8 18"></polyline>
           </svg>
-          实时解析预览 (Clash YAML Inspector)
+          实时解析预览与剩余流量统计
         </h3>
 
+        <!-- Traffic Stats Box -->
+        <div id="trafficBox" class="traffic-card" style="display: none;">
+          <div class="traffic-header">
+            <span>机场订阅流量状况</span>
+            <span id="trafficUsagePercent">0%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="trafficProgressFill" class="progress-bar-fill"></div>
+          </div>
+          <div class="traffic-details">
+            <span id="trafficUsed">已用: -</span>
+            <span id="trafficTotal">总共: -</span>
+            <span id="trafficExpire">到期时间: -</span>
+          </div>
+        </div>
+
         <div class="inspector-header">
-          <span class="pill pill-blue" id="statNodes">前置节点: -</span>
-          <span class="pill pill-green" id="statExit">最终出口: 家宽 SOCKS 01</span>
-          <span class="pill" id="statRules">链式代理: dialer-proxy ✅</span>
+          <span class="pill pill-blue" id="statNodes">节点数: -</span>
+          <span class="pill pill-green" id="statExit">出口节点: 家宽出口</span>
+          <span class="pill" id="statClient">目标格式: Clash</span>
         </div>
 
         <pre><code id="yamlPreview">正在发起请求并执行转换脚本...</code></pre>
@@ -536,33 +678,50 @@ export function renderWebUI(): string {
     </main>
 
     <footer>
-      Almighty.CF-Cub &bull; YTBlog-Theme (Fluxgrid Engine) &bull; Cloudflare Workers Module Architecture
+      <div class="footer-content">
+        <a class="footer-github-link" href="https://github.com/Mareixcode/cf-sub" target="_blank" rel="noopener noreferrer">
+          <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
+          </svg>
+          <span>GitHub: Mareixcode/cf-sub</span>
+        </a>
+        <span class="footer-subtitle">Cloudflare Workers Subscription Converter & Multi-Client Chain Proxy</span>
+      </div>
     </footer>
   </div>
 
   <div id="toast" class="toast">已成功复制到剪贴板！</div>
 
   <script>
-    /* YTBlog-Theme Theme Switcher */
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', newTheme);
-      try {
-        localStorage.setItem('fluxgrid-theme', newTheme);
-      } catch (e) {}
+    function getSystemTheme() {
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
     }
 
-    (function initTheme() {
-      try {
-        const stored = localStorage.getItem('fluxgrid-theme');
-        if (stored === 'dark' || stored === 'light') {
-          document.documentElement.setAttribute('data-theme', stored);
-        }
-      } catch (e) {}
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || getSystemTheme();
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      try { localStorage.setItem('cf_sub_theme', next); } catch (e) {}
+    }
+
+    // body 底部的监听器：仅负责系统主题变化时跟随（用户手动切换后不跟随）
+    (function attachSystemThemeListener() {
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          var stored;
+          try { stored = localStorage.getItem('cf_sub_theme'); } catch(e) {}
+          if (!stored) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
     })();
 
-    /* YTBlog-Theme Particle Background Engine */
+    /* Particle Background Engine */
     (function initParticles() {
       const canvas = document.getElementById('particle-bg');
       if (!canvas) return;
@@ -631,16 +790,18 @@ export function renderWebUI(): string {
       draw();
     })();
 
-    /* Interactive Form Logic */
     function toggleSocksPanel() {
       const panel = document.getElementById('socksPanel');
       const chevron = document.getElementById('socksChevron');
-      if (panel.style.display === 'none') {
-        panel.style.display = 'grid';
-        chevron.textContent = '▲';
-      } else {
+      const isOpen = panel.dataset.open === '1';
+      if (isOpen) {
         panel.style.display = 'none';
+        panel.dataset.open = '0';
         chevron.textContent = '▼';
+      } else {
+        panel.style.display = 'grid';
+        panel.dataset.open = '1';
+        chevron.textContent = '▲';
       }
     }
 
@@ -648,9 +809,14 @@ export function renderWebUI(): string {
       const subUrl = document.getElementById('subUrl').value.trim();
       if (!subUrl) return '';
 
+      const target = document.getElementById('targetClient').value;
+      const socksType = document.getElementById('socksType').value;
+
       const workerOrigin = window.location.origin;
       const urlObj = new URL('/sub', workerOrigin);
       urlObj.searchParams.set('url', subUrl);
+      if (target !== 'clash') urlObj.searchParams.set('target', target);
+      if (socksType !== 'socks5') urlObj.searchParams.set('socks_type', socksType);
 
       const server = document.getElementById('socksServer').value.trim();
       const port = document.getElementById('socksPort').value.trim();
@@ -672,18 +838,45 @@ export function renderWebUI(): string {
         return;
       }
 
+      const target = document.getElementById('targetClient').value;
       document.getElementById('finalUrl').textContent = url;
-      document.getElementById('clashImportBtn').href = 'clash://install-config?url=' + encodeURIComponent(url);
+
+      const importBtn = document.getElementById('clientImportBtn');
+      if (target === 'clash') {
+        importBtn.href = 'clash://install-config?url=' + encodeURIComponent(url);
+        importBtn.textContent = '一键导入 Clash';
+      } else if (target === 'singbox') {
+        importBtn.href = 'sing-box://import-remote-profile?url=' + encodeURIComponent(url);
+        importBtn.textContent = '一键导入 Sing-box';
+      } else if (target === 'surge') {
+        importBtn.href = 'surge:///install-config?url=' + encodeURIComponent(url);
+        importBtn.textContent = '一键导入 Surge';
+      } else if (target === 'shadowrocket') {
+        importBtn.href = 'sub://' + btoa(url);
+        importBtn.textContent = '一键导入 Shadowrocket';
+      } else {
+        importBtn.href = url;
+        importBtn.textContent = '打开订阅源';
+      }
+
       document.getElementById('resultSection').style.display = 'block';
-      showToast('转换链接已成功生成！');
+      showToast('订阅链接已成功生成！');
     }
 
     function copyResultLink() {
       const text = document.getElementById('finalUrl').textContent;
       if (!text) return;
       navigator.clipboard.writeText(text).then(() => {
-        showToast('已复制转换链接到剪贴板！');
+        showToast('已复制链接到剪贴板！');
       });
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0 || !bytes) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
     async function testLiveConvert() {
@@ -693,26 +886,83 @@ export function renderWebUI(): string {
         return;
       }
 
+      const target = document.getElementById('targetClient').value;
       const inspectorCard = document.getElementById('inspectorCard');
       const yamlPreview = document.getElementById('yamlPreview');
+      const trafficBox = document.getElementById('trafficBox');
+
       inspectorCard.style.display = 'block';
       yamlPreview.textContent = '正在发起请求并执行转换脚本...';
+      document.getElementById('statClient').textContent = '目标格式: ' + target.toUpperCase();
 
       try {
         const res = await fetch(url);
+        const text = await res.text();
+
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || ('HTTP Error ' + res.status));
+          let errMsg = 'HTTP Error ' + res.status;
+          try {
+            const errData = JSON.parse(text);
+            if (errData && errData.message) errMsg = errData.message;
+          } catch(e) {}
+          throw new Error(errMsg);
         }
 
-        const yamlText = await res.text();
-        yamlPreview.textContent = yamlText;
+        const userinfo = res.headers.get('subscription-userinfo');
+        if (userinfo) {
+          const params = new URLSearchParams(userinfo.replace(/; */g, '&'));
+          const upload = parseInt(params.get('upload') || '0', 10);
+          const download = parseInt(params.get('download') || '0', 10);
+          const total = parseInt(params.get('total') || '0', 10);
+          const expire = parseInt(params.get('expire') || '0', 10);
 
-        const proxyMatches = (yamlText.match(/- name:/g) || []).length;
-        document.getElementById('statNodes').textContent = '前置节点数: ' + proxyMatches + ' 个';
+          const used = upload + download;
+          const percent = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+
+          document.getElementById('trafficUsagePercent').textContent = percent + '%';
+          document.getElementById('trafficProgressFill').style.width = percent + '%';
+          document.getElementById('trafficUsed').textContent = '已用: ' + formatBytes(used);
+          document.getElementById('trafficTotal').textContent = '总共: ' + (total > 0 ? formatBytes(total) : '无限制');
+
+          if (expire > 0) {
+            const expDate = new Date(expire * 1000);
+            document.getElementById('trafficExpire').textContent = '到期时间: ' + expDate.toLocaleDateString('zh-CN');
+          } else {
+            document.getElementById('trafficExpire').textContent = '到期时间: 长期有效';
+          }
+          trafficBox.style.display = 'block';
+        } else {
+          trafficBox.style.display = 'none';
+        }
+
+        yamlPreview.textContent = text;
+
+        let nodeCount = 0;
+        if (target === 'clash') {
+          nodeCount = (text.match(/^- name:/gm) || []).length;
+        } else if (target === 'singbox') {
+          try {
+            const parsed = JSON.parse(text);
+            const builtinTypes = ['selector', 'direct', 'block', 'dns', 'urltest', 'fallback', 'loadbalance'];
+            nodeCount = (parsed.outbounds || []).filter(function(o) { return builtinTypes.indexOf(o.type) === -1; }).length;
+          } catch(e){}
+        } else if (target === 'surge') {
+          const surgeTypes = ['= ss,', '= socks5,', '= http,', '= trojan,', '= vmess,'];
+          nodeCount = text.split('\n').filter(function(l) {
+            const t = l.trim();
+            if (!t || t[0] === '[' || t[0] === '#' || t[0] === ';') return false;
+            return surgeTypes.some(function(k) { return t.indexOf(k) !== -1; });
+          }).length;
+        } else {
+          nodeCount = text.split('\n').filter(function(l) {
+            const t = l.trim();
+            return t && t[0] !== '[' && t[0] !== '#';
+          }).length;
+        }
+        document.getElementById('statNodes').textContent = '节点数: ' + nodeCount;
 
       } catch (err) {
-        yamlPreview.textContent = '❌ 在线解析测试失败: ' + err.message;
+        yamlPreview.textContent = '[在线解析测试失败] ' + (err.message || err);
       }
     }
 

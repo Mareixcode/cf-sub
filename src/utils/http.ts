@@ -1,4 +1,6 @@
-export async function fetchSubscription(url: string, userAgent?: string | null): Promise<string> {
+import { FetchSubResult } from '../types';
+
+export async function fetchSubscription(url: string, userAgent?: string | null): Promise<FetchSubResult> {
   try {
     const headers: Record<string, string> = {
       'User-Agent': userAgent || 'ClashforWindows/0.20.39',
@@ -26,8 +28,16 @@ export async function fetchSubscription(url: string, userAgent?: string | null):
       throw new Error('Empty subscription response');
     }
 
-    return text;
+    const userinfo = response.headers.get('subscription-userinfo') || response.headers.get('Subscription-Userinfo') || undefined;
+    const profileUpdateInterval = response.headers.get('profile-update-interval') || response.headers.get('Profile-Update-Interval') || undefined;
+
+    return {
+      content: text,
+      userinfo,
+      profileUpdateInterval,
+    };
   } catch (error) {
     throw new Error(`Download failed: ${(error as Error).message}`);
   }
 }
+
