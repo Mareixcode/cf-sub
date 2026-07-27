@@ -1,10 +1,10 @@
 function main(config, profileName) {
     if (!Array.isArray(config.proxies)) config.proxies = [];
 
-    const frontGroupName = "前置节点";
-    const finalExitGroupName = "最终出口";
-    const mailGroupName = "邮件服务";
-    const homeExitName = "家宽 SOCKS 01";
+    const frontGroupName = "🚀 前置节点";
+    const finalExitGroupName = "⚡ 最终出口";
+    const mailGroupName = "✉️ 邮件服务";
+    const homeExitName = "🏠 家宽出口";
 
     const processNames = [
         "tor",
@@ -55,28 +55,17 @@ function main(config, profileName) {
         ...new Set(list.filter(Boolean))
     ];
 
-    // 订阅只作为节点仓库：清理节点名中的 Emoji
-    const isEmojiCodePoint = codePoint =>
-        (codePoint >= 0x1F000 && codePoint <= 0x1FAFF) ||
-        (codePoint >= 0x2600 && codePoint <= 0x27BF) ||
-        codePoint === 0xFE0F ||
-        codePoint === 0x200D;
-
-    const stripEmoji = text => Array.from(String(text || ""))
-        .filter(character => !isEmojiCodePoint(character.codePointAt(0)))
-        .join("")
-        .replace(/\s+/g, " ")
-        .trim();
+    // 保留原始 Emoji 图标，仅修剪头尾多余空格
+    const formatNodeName = text => String(text || "").replace(/\s+/g, " ").trim();
 
     const usedSourceNames = new Map();
     const sourceProxies = [];
 
     config.proxies.forEach((proxy, index) => {
         if (!proxy || !proxy.name) return;
-        if (proxy.name === homeExitName) return;
-        if (proxy.name === "动态跟随-家宽链") return;
+        if (proxy.name === homeExitName || proxy.name.includes("家宽出口")) return;
 
-        const baseName = stripEmoji(proxy.name) || `节点 ${index + 1}`;
+        const baseName = formatNodeName(proxy.name) || `节点 ${index + 1}`;
         const duplicateIndex = (usedSourceNames.get(baseName) || 0) + 1;
         usedSourceNames.set(baseName, duplicateIndex);
 
@@ -94,32 +83,58 @@ function main(config, profileName) {
     config.proxies = sourceProxies;
     const sourceProxyNames = sourceProxies.map(proxy => proxy.name);
 
-    // 读取动态参数 -> 环境变量 -> 通用示例降级值 (无隐私硬编码)
+    // 读取动态参数 -> 环境变量 -> 默认值
     const customSocks = (typeof CUSTOM_SOCKS !== 'undefined' && CUSTOM_SOCKS) ? CUSTOM_SOCKS : {};
 
+    const socksType = (customSocks.type || (typeof SOCKS_TYPE !== 'undefined' ? SOCKS_TYPE : "socks5")).toLowerCase();
     const socksServer = customSocks.server || ((typeof SOCKS_SERVER !== 'undefined' && SOCKS_SERVER) ? SOCKS_SERVER : "127.0.0.1");
     const socksPort = customSocks.port ? Number(customSocks.port) : ((typeof SOCKS_PORT !== 'undefined' && SOCKS_PORT) ? Number(SOCKS_PORT) : 1080);
     const socksUsername = customSocks.username || ((typeof SOCKS_USERNAME !== 'undefined' && SOCKS_USERNAME) ? SOCKS_USERNAME : "");
     const socksPassword = customSocks.password || ((typeof SOCKS_PASSWORD !== 'undefined' && SOCKS_PASSWORD) ? SOCKS_PASSWORD : "");
+    const socksCipher = customSocks.cipher || ((typeof SOCKS_CIPHER !== 'undefined' && SOCKS_CIPHER) ? SOCKS_CIPHER : "chacha20-ietf-poly1305");
+    const socksUuid = customSocks.uuid || ((typeof SOCKS_UUID !== 'undefined' && SOCKS_UUID) ? SOCKS_UUID : "");
+    const socksSni = customSocks.sni || ((typeof SOCKS_SNI !== 'undefined' && SOCKS_SNI) ? SOCKS_SNI : "");
     const socksNodeName = customSocks.name || homeExitName;
 
-    // 将家宽节点插入并指向前置组，实现链式代理
-    const homeExitProxy = {
+    // 根据不同出口协议组装家宽代理节点
+    let homeExitProxy = {
         name: socksNodeName,
-        type: "socks5",
+        type: socksType,
         server: socksServer,
         port: socksPort,
-        username: socksUsername,
-        password: socksPassword,
-        udp: true,
         "dialer-proxy": frontGroupName
     };
+
+    if (socksType === 'socks5') {
+        homeExitProxy.username = socksUsername;
+        homeExitProxy.password = socksPassword;
+        homeExitProxy.udp = true;
+    } else if (socksType === 'http' || socksType === 'https') {
+        homeExitProxy.username = socksUsername;
+        homeExitProxy.password = socksPassword;
+        if (socksType === 'https') {
+            homeExitProxy.tls = true;
+            if (socksSni) homeExitProxy.sni = socksSni;
+        }
+    } else if (socksType === 'ss') {
+        homeExitProxy.cipher = socksCipher;
+        homeExitProxy.password = socksPassword;
+        homeExitProxy.udp = true;
+    } else if (socksType === 'trojan') {
+        homeExitProxy.password = socksPassword;
+        if (socksSni) homeExitProxy.sni = socksSni;
+        homeExitProxy.udp = true;
+    } else if (socksType === 'vless') {
+        homeExitProxy.uuid = socksUuid;
+        homeExitProxy.cipher = 'auto';
+        homeExitProxy.udp = true;
+    }
 
     config.proxies.push(homeExitProxy);
 
     const frontProxyNames = unique(sourceProxyNames);
 
-    // 策略组
+    // 策略组定义（带 Emoji 图标）
     config["proxy-groups"] = [
         {
             name: frontGroupName,
@@ -239,3 +254,4 @@ function main(config, profileName) {
 
 export default main;
 export { main };
+
