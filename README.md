@@ -1,6 +1,6 @@
 # Cloudflare Workers Subscription Converter & SOCKS5 Chain Proxy (cf-cub)
 
-一个完全部署在 **Cloudflare Workers (Module Worker 架构)** 的开源机场订阅转换服务与 SOCKS5 链式代理 Exit 节点注入工具。
+一个部署在 **Cloudflare Workers** 的开源机场订阅转换服务与 SOCKS5 链式代理 Exit 节点注入工具。
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Mareixcode/cf-cub)
 [![License: MIT](https://img.shields.com/badge/License-MIT-blue.svg)](LICENSE)
@@ -9,21 +9,21 @@
 
 ---
 
-## ⚡ 30 秒极简部署指南 (其他人如何使用)
+## ⚡ 30 秒极简部署
 
 选择以下 **任意一种** 方式即可完成部署：
 
 ### 方式一：一键网页部署 (推荐，无需本地环境)
 
-点击下方按钮，登录 Cloudflare 即可在网页上一键自动完成部署：
+点击下方按钮，登录 Cloudflare 网页上一键自动完成部署：
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Mareixcode/cf-cub)
 
 ---
 
-### 方式二：命令行 3 步一键部署
+### 方式二：命令行 3 步部署
 
-只需复制粘贴以下 3 行命令：
+复制粘贴以下 3 行命令：
 
 ```bash
 git clone https://github.com/Mareixcode/cf-cub.git
@@ -35,10 +35,10 @@ npx wrangler deploy
 
 ## ⚙️ 环境变量配置 (可选)
 
-部署成功后，配置您的家宽 SOCKS5 出口参数（共有两种简单方式）：
+部署成功后，配置您的家宽 SOCKS5 出口参数（两种）：
 
 - **方法 A (Web UI 界面直接填)**：直接在浏览器打开部署好的 Worker 网址，在网页界面上直接填入 SOCKS5 IP、端口、账号和密码。
-- **方法 B (Cloudflare 后台统一配置)**：在 Cloudflare Dashboard -> Worker -> **Settings** -> **Variables** 中添加环境变量：
+- **方法 B (Cloudflare 环境变量)**：在 Cloudflare Dashboard -> Worker -> **Settings** -> **Variables** 中添加环境变量：
   - `SOCKS_SERVER`: SOCKS5 服务器 IP/域名
   - `SOCKS_PORT`: SOCKS5 端口
   - `SOCKS_USERNAME`: 认证用户名
