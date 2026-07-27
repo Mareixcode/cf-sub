@@ -1,6 +1,6 @@
 export function renderWebUI(): string {
   return `<!DOCTYPE html>
-<html lang="zh-CN" data-theme="dark">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +8,17 @@ export function renderWebUI(): string {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- 主题初始化：放在 head 内立即执行，防止页面闪烁（FOUC） -->
+  <script>
+    (function() {
+      function getSysTheme() {
+        return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      }
+      var stored;
+      try { stored = localStorage.getItem('cf_sub_theme'); } catch(e) {}
+      document.documentElement.setAttribute('data-theme', (stored === 'dark' || stored === 'light') ? stored : getSysTheme());
+    })();
+  </script>
   <style>
     :root {
       --bg: #0b0f14;
@@ -692,22 +703,13 @@ export function renderWebUI(): string {
       try { localStorage.setItem('cf_sub_theme', next); } catch (e) {}
     }
 
-    (function initTheme() {
-      try {
-        const stored = localStorage.getItem('cf_sub_theme');
-        if (stored === 'dark' || stored === 'light') {
-          applyTheme(stored);
-        } else {
-          applyTheme(getSystemTheme());
-        }
-      } catch (e) {
-        applyTheme(getSystemTheme());
-      }
-
-      // 实时监听系统主题模式切换并保持一致
+    // body 底部的监听器：仅负责系统主题变化时跟随（用户手动切换后不跟随）
+    (function attachSystemThemeListener() {
       if (window.matchMedia) {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-          if (!localStorage.getItem('cf_sub_theme')) {
+          var stored;
+          try { stored = localStorage.getItem('cf_sub_theme'); } catch(e) {}
+          if (!stored) {
             applyTheme(e.matches ? 'dark' : 'light');
           }
         });
@@ -787,12 +789,16 @@ export function renderWebUI(): string {
     function toggleSocksPanel() {
       const panel = document.getElementById('socksPanel');
       const chevron = document.getElementById('socksChevron');
-      if (panel.style.display === 'none') {
-        panel.style.display = 'grid';
-        chevron.textContent = '▲';
-      } else {
+      // 用 dataset 标记开关状态，避免依赖 style.display 字符串比较（兼容性差）
+      const isOpen = panel.dataset.open === '1';
+      if (isOpen) {
         panel.style.display = 'none';
+        panel.dataset.open = '0';
         chevron.textContent = '▼';
+      } else {
+        panel.style.display = 'grid';
+        panel.dataset.open = '1';
+        chevron.textContent = '▲';
       }
     }
 
