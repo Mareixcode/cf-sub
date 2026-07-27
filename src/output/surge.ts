@@ -4,7 +4,7 @@ export function formatSurgeConf(config: ClashConfig): string {
   const proxies = config.proxies || [];
   const groups = config['proxy-groups'] || [];
 
-  let proxyLines: string[] = [];
+  const proxyLines: string[] = [];
   for (const proxy of proxies) {
     const line = transformProxyToSurge(proxy);
     if (line) {
@@ -12,7 +12,7 @@ export function formatSurgeConf(config: ClashConfig): string {
     }
   }
 
-  let groupLines: string[] = [];
+  const groupLines: string[] = [];
   for (const group of groups) {
     const members = (group.proxies || []).join(', ');
     groupLines.push(`${group.name} = select, ${members}`);
@@ -43,26 +43,49 @@ function transformProxyToSurge(proxy: ClashProxy): string | null {
   const dialerProxy = proxy['dialer-proxy'] as string | undefined;
 
   const type = (proxy.type || '').toLowerCase();
-  let parts: string[] = [];
+  const parts: string[] = [];
 
   if (type === 'socks5' || type === 'socks') {
+    // Surge SOCKS5: name = socks5, server, port, username=x, password=x
     parts.push('socks5', server, String(port));
     if (proxy.username) parts.push(`username=${proxy.username}`);
     if (proxy.password) parts.push(`password=${proxy.password}`);
     parts.push('udp-relay=true');
-  } else if (type === 'http' || type === 'https') {
-    parts.push(type === 'https' ? 'https' : 'http', server, String(port));
+  } else if (type === 'http') {
+    parts.push('http', server, String(port));
     if (proxy.username) parts.push(`username=${proxy.username}`);
     if (proxy.password) parts.push(`password=${proxy.password}`);
-  } else if (type === 'ss') {
-    parts.push('custom', server, String(port), String(proxy.cipher), String(proxy.password), 'https://raw.githubusercontent.com/lhie1/Rules/master/SSEncrypt.module');
-  } else if (type === 'trojan') {
-    parts.push('trojan', server, String(port), `password=${proxy.password}`);
+  } else if (type === 'https') {
+    // Surge: https 用 http 类型加 tls=true
+    parts.push('http', server, String(port));
+    if (proxy.username) parts.push(`username=${proxy.username}`);
+    if (proxy.password) parts.push(`password=${proxy.password}`);
+    parts.push('tls=true');
     if (proxy.sni) parts.push(`sni=${proxy.sni}`);
+  } else if (type === 'ss') {
+    // Surge 4+ 标准 Shadowsocks 格式
+    parts.push('ss', server, String(port));
+    parts.push(`encrypt-method=${proxy.cipher}`);
+    parts.push(`password=${proxy.password}`);
+    parts.push('udp-relay=true');
+  } else if (type === 'trojan') {
+    // Surge Trojan 格式
+    parts.push('trojan', server, String(port));
+    parts.push(`password=${proxy.password}`);
+    if (proxy.sni) parts.push(`sni=${proxy.sni}`);
+    parts.push('udp-relay=true');
   } else if (type === 'vmess') {
-    parts.push('vmess', server, String(port), `username=${proxy.uuid}`);
+    // Surge VMess 格式
+    parts.push('vmess', server, String(port));
+    parts.push(`username=${proxy.uuid}`);
+    if (proxy.cipher) parts.push(`encrypt-method=${proxy.cipher}`);
+    if (proxy.tls) {
+      parts.push('tls=true');
+      if (proxy.servername) parts.push(`sni=${proxy.servername}`);
+    }
   } else {
-    parts.push(type, server, String(port));
+    // 降级回 socks5
+    parts.push('socks5', server, String(port));
   }
 
   if (dialerProxy) {
@@ -71,3 +94,4 @@ function transformProxyToSurge(proxy: ClashProxy): string | null {
 
   return `${name} = ${parts.join(', ')}`;
 }
+

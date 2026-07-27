@@ -97,31 +97,36 @@ function main(config, profileName) {
     const socksNodeName = customSocks.name || homeExitName;
 
     // 根据不同出口协议组装家宽代理节点
+    // Clash 中 http/https 出口均使用 type=http，https 通过 tls=true 区分
+    const clashProxyType = (socksType === 'https') ? 'http' : socksType;
+
     let homeExitProxy = {
         name: socksNodeName,
-        type: socksType,
+        type: clashProxyType,
         server: socksServer,
         port: socksPort,
         "dialer-proxy": frontGroupName
     };
 
     if (socksType === 'socks5') {
-        homeExitProxy.username = socksUsername;
-        homeExitProxy.password = socksPassword;
+        if (socksUsername) homeExitProxy.username = socksUsername;
+        if (socksPassword) homeExitProxy.password = socksPassword;
         homeExitProxy.udp = true;
-    } else if (socksType === 'http' || socksType === 'https') {
-        homeExitProxy.username = socksUsername;
-        homeExitProxy.password = socksPassword;
-        if (socksType === 'https') {
-            homeExitProxy.tls = true;
-            if (socksSni) homeExitProxy.sni = socksSni;
-        }
+    } else if (socksType === 'http') {
+        if (socksUsername) homeExitProxy.username = socksUsername;
+        if (socksPassword) homeExitProxy.password = socksPassword;
+    } else if (socksType === 'https') {
+        if (socksUsername) homeExitProxy.username = socksUsername;
+        if (socksPassword) homeExitProxy.password = socksPassword;
+        homeExitProxy.tls = true;
+        if (socksSni) homeExitProxy.sni = socksSni;
     } else if (socksType === 'ss') {
         homeExitProxy.cipher = socksCipher;
         homeExitProxy.password = socksPassword;
         homeExitProxy.udp = true;
     } else if (socksType === 'trojan') {
         homeExitProxy.password = socksPassword;
+        homeExitProxy.tls = true;
         if (socksSni) homeExitProxy.sni = socksSni;
         homeExitProxy.udp = true;
     } else if (socksType === 'vless') {

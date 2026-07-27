@@ -4,7 +4,7 @@ export function formatQuanxConfig(config: ClashConfig): string {
   const proxies = config.proxies || [];
   const groups = config['proxy-groups'] || [];
 
-  let nodeLines: string[] = [];
+  const nodeLines: string[] = [];
   for (const proxy of proxies) {
     const line = transformProxyToQuanx(proxy);
     if (line) {
@@ -12,7 +12,7 @@ export function formatQuanxConfig(config: ClashConfig): string {
     }
   }
 
-  let policyLines: string[] = [];
+  const policyLines: string[] = [];
   for (const group of groups) {
     const members = (group.proxies || []).join(', ');
     policyLines.push(`static=${group.name}, ${members}, img-url=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png`);
@@ -42,26 +42,35 @@ function transformProxyToQuanx(proxy: ClashProxy): string | null {
 
   let line = '';
   if (type === 'socks5' || type === 'socks') {
-    let auth = '';
-    if (proxy.username && proxy.password) {
-      auth = `, fast-open=false, udp-relay=true, user=${proxy.username}, password=${proxy.password}`;
-    }
+    const auth = (proxy.username && proxy.password)
+      ? `, fast-open=false, udp-relay=true, user=${proxy.username}, password=${proxy.password}`
+      : ', fast-open=false, udp-relay=true';
     line = `socks5=${server}:${port}${auth}, tag=${name}`;
   } else if (type === 'http' || type === 'https') {
-    let auth = '';
-    if (proxy.username && proxy.password) {
-      auth = `, user=${proxy.username}, password=${proxy.password}`;
-    }
-    line = `http=${server}:${port}${auth}, tag=${name}`;
+    const tls = type === 'https' ? ', over-tls=true' : '';
+    const auth = (proxy.username && proxy.password)
+      ? `, user=${proxy.username}, password=${proxy.password}`
+      : '';
+    line = `http=${server}:${port}${auth}${tls}, tag=${name}`;
   } else if (type === 'ss') {
-    line = `shadowsocks=${server}:${port}, method=${proxy.cipher}, password=${proxy.password}, fast-open=false, udp-relay=true, tag=${name}`;
+    // QX Shadowsocks 格式
+    const cipher = proxy.cipher || 'chacha20-ietf-poly1305';
+    line = `shadowsocks=${server}:${port}, method=${cipher}, password=${proxy.password}, fast-open=false, udp-relay=true, tag=${name}`;
   } else if (type === 'trojan') {
     line = `trojan=${server}:${port}, password=${proxy.password}, over-tls=true, tls-verification=true, tag=${name}`;
   } else if (type === 'vmess') {
-    line = `vmess=${server}:${port}, method=none, password=${proxy.uuid}, tag=${name}`;
+    // QX VMess: method 使用节点实际加密方式而非固定 none
+    const cipher = (proxy.cipher && proxy.cipher !== 'auto') ? String(proxy.cipher) : 'chacha20-ietf-poly1305';
+    const tls = proxy.tls ? ', obfs=over-tls' : '';
+    line = `vmess=${server}:${port}, method=${cipher}, password=${proxy.uuid}${tls}, tag=${name}`;
+  } else if (type === 'vless') {
+    // QX VLESS (需要 QX >= 1.0.30)
+    line = `vless=${server}:${port}, password=${proxy.uuid}, over-tls=true, tag=${name}`;
   } else {
-    line = `socks5=${server}:${port}, tag=${name}`;
+    // 不支持的类型跳过
+    return null;
   }
 
   return line;
 }
+

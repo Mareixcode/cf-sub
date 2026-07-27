@@ -14,7 +14,7 @@ export function formatSingboxJson(config: ClashConfig): string {
     }
   }
 
-  // 2. 转换策略组
+  // 2. 转换策略组为 selector
   for (const group of clashGroups) {
     outbounds.push({
       type: 'selector',
@@ -23,13 +23,14 @@ export function formatSingboxJson(config: ClashConfig): string {
     });
   }
 
-  // 3. 默认补全 direct 与 block
+  // 3. 补全内置出站
   outbounds.push(
     { type: 'direct', tag: 'DIRECT' },
     { type: 'block', tag: 'REJECT' },
     { type: 'dns', tag: 'dns-out' }
   );
 
+  // Sing-box 1.8+ 规范：dns.servers 不放 detour，通过 dns.rules 路由
   const singboxConfig = {
     log: {
       level: 'info',
@@ -37,18 +38,25 @@ export function formatSingboxJson(config: ClashConfig): string {
     },
     dns: {
       servers: [
-        { tag: 'google', address: 'tls://8.8.8.8' },
-        { tag: 'local', address: '223.5.5.5', detour: 'DIRECT' },
+        { tag: 'remote', address: 'tls://8.8.8.8', detour: '⚡ 最终出口' },
+        { tag: 'local', address: '223.5.5.5' },
+        { tag: 'block', address: 'rcode://success' },
       ],
+      rules: [
+        { geosite: ['cn'], server: 'local' },
+        { geosite: ['category-ads-all'], server: 'block', disable_cache: true },
+      ],
+      final: 'remote',
+      strategy: 'prefer_ipv4',
     },
     inbounds: [
       {
         type: 'tun',
         tag: 'tun-in',
-        interface_name: 'tun0',
-        inet4_address: '172.19.0.1/30',
+        address: ['172.19.0.1/30', 'fdfe:dcba:9876::1/126'],
         auto_route: true,
         strict_route: true,
+        sniff: true,
       },
     ],
     outbounds,
@@ -60,6 +68,7 @@ export function formatSingboxJson(config: ClashConfig): string {
 
   return JSON.stringify(singboxConfig, null, 2);
 }
+
 
 function transformProxyToSingbox(proxy: ClashProxy): Record<string, unknown> | null {
   if (!proxy || !proxy.name) return null;
@@ -83,18 +92,22 @@ function transformProxyToSingbox(proxy: ClashProxy): Record<string, unknown> | n
 
   if (type === 'socks5' || type === 'socks') {
     outbound.type = 'socks';
+    outbound.version = '5';
     if (proxy.username) outbound.username = proxy.username;
     if (proxy.password) outbound.password = proxy.password;
-  } else if (type === 'http' || type === 'https') {
+  } else if (type === 'http') {
     outbound.type = 'http';
     if (proxy.username) outbound.username = proxy.username;
     if (proxy.password) outbound.password = proxy.password;
-    if (type === 'https' || proxy.tls) {
-      outbound.tls = { enabled: true, server_name: proxy.sni || server };
-    }
+  } else if (type === 'https') {
+    // Sing-box 中 https 代理用 http + tls 实现
+    outbound.type = 'http';
+    if (proxy.username) outbound.username = proxy.username;
+    if (proxy.password) outbound.password = proxy.password;
+    outbound.tls = { enabled: true, server_name: proxy.sni || server };
   } else if (type === 'ss') {
     outbound.type = 'shadowsocks';
-    outbound.method = proxy.cipher;
+    outbound.method = proxy.cipher || 'chacha20-ietf-poly1305';
     outbound.password = proxy.password;
   } else if (type === 'vmess') {
     outbound.type = 'vmess';
@@ -108,6 +121,8 @@ function transformProxyToSingbox(proxy: ClashProxy): Record<string, unknown> | n
     outbound.type = 'vless';
     outbound.uuid = proxy.uuid;
     if (proxy.flow) outbound.flow = proxy.flow;
+    // VLESS 通常需要 TLS（Reality 或 TLS）
+    outbound.tls = { enabled: true, server_name: proxy.sni || proxy.servername || server };
   } else if (type === 'trojan') {
     outbound.type = 'trojan';
     outbound.password = proxy.password;
@@ -117,7 +132,8 @@ function transformProxyToSingbox(proxy: ClashProxy): Record<string, unknown> | n
     outbound.password = proxy.auth;
     outbound.tls = { enabled: true, server_name: proxy.sni || server };
   } else {
-    outbound.type = type;
+    // 不支持的类型直接跳过，避免生成无效配置
+    return null;
   }
 
   return outbound;
