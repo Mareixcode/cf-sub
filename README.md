@@ -1,4 +1,4 @@
-# 🚀 多客户端订阅转换器与链式代理(`cf-sub`)
+# 链式代理后置节点配置工具(`cf-sub`)
 
 <p align="center">
   <a href="https://workers.cloudflare.com/" target="_blank">
@@ -18,33 +18,30 @@
   </a>
 </p>
 
-> ⚡ 一个多客户端机场订阅转换工具与家宽链式代理节点注入工具
+> 一个家宽链式代理节点注入工具
 
 ---
 
-## 📖 项目简介
+## 项目简介
 
-`cf-sub` 可以将标准的机场节点订阅转化为支持多客户端格式（**Clash / Mihomo**、**Sing-box**、**Surge**、**Quantumult X**、**Shadowrocket**）的配置。为机场节点自动附加后置家宽代理（支持 SOCKS5, HTTP, HTTPS, SS, Trojan, VLESS 出口），以家宽 IP 作为终点出口，同时保留机场原生节点与原有的分流策略。
+`cf-sub` 为机场节点自动附加**后置家宽代理**（支持 SOCKS5, HTTP, HTTPS, SS, Trojan, VLESS 出口），以**家宽 IP**作为终点出口，同时保留机场原生节点与原有的分流策略。可以将标准的机场节点订阅转化为**Clash / Mihomo**、**Sing-box**的配置。
 
 ---
 
-## 🌟 核心特性
+## 核心特性
 
-- 🌐 **多客户端**：
+- **多客户端**：
   - **Clash / Mihomo** (YAML) -> 利用 `dialer-proxy` 链式代理
   - **Sing-box** (JSON 1.8+) -> 利用 `detour` 链式代理
-  - **Surge** (.conf) -> 利用 `under-proxy` 链式代理
-  - **Quantumult X** -> 策略组与节点转换
-  - **Shadowrocket / 通用节点** -> Base64 编码与单行 URI 列表
-- 🛡️ **家宽敏感信息零暴露**：支持在 Workers 环境变量中存储家宽 IP、端口与密码。
-- 📊 **剩余流量与到期时间显示**：在客户端卡片及 Web UI 中直观展示已用流量、剩余流量及到期倒计时。
-- 🔗 **一键客户端导入**：可一键生成并调用 `clash://`, `sing-box://`, `surge://`, `sub://` 客户端快捷导入链接。
+- **家宽敏感信息零暴露**：支持在 Workers 环境变量中存储家宽 IP、端口与密码
+- **剩余流量与到期时间显示**：直观展示已用流量、剩余流量及到期倒计时
+- **一键客户端导入**：可一键调用客户端快捷导入链接
 ---
 
-## 🏗️ 工作原理
+## 工作原理
 
 ```text
-[ 用户客户端 (Clash / Sing-box / Surge) ] 
+[ 用户客户端 ] 
             │
             ▼ (访问目标网站)
     [ 前置节点 (机场节点) ] ── (中继流量) ──► [ 出口节点 (家宽出口) ] ──► [ 目标网站 ]
@@ -81,38 +78,36 @@ npx wrangler deploy
 
 ---
 
-## ⚙️ 配置说明
+## 配置说明
 
 ### 方法 A：使用 Web UI 界面
 
-填入机场订阅，选择目标客户端与家宽出口协议（若家宽信息已配置在环境变量中，可保持留空），点击**生成订阅链接**或**一键导入客户端**。
+### 方法 B：环境变量 (推荐)
 
-### 方法 B：Cloudflare 后台环境变量配置 (推荐)
+前往 Dashboard -> **Workers & Pages** -> 选择对应 Worker -> **Settings** -> **Variables**，添加以下环境变量：
 
-前往 Cloudflare Dashboard -> **Workers & Pages** -> 选择您的 Worker -> **Settings** -> **Variables**，添加以下环境变量：
-
-| 变量名 | 说明 | 示例 |
-| :--- | :--- | :--- |
-| `SOCKS_TYPE` | 出口协议类型 (`socks5` \| `http` \| `https` \| `ss` \| `trojan` \| `vless`) | `socks5` |
-| `SOCKS_SERVER` | 家宽出口服务器 IP 或域名 | `1.2.3.4` 或 `exit.example.com` |
-| `SOCKS_PORT` | 出口服务端口 | `1080` |
-| `SOCKS_USERNAME` | 认证用户名 (可选) | `user` |
-| `SOCKS_PASSWORD` | 认证密码 (可选) | `pass` |
+| 变量名 | 说明 |
+| :--- | :--- |
+| `SOCKS_TYPE` | 出口协议类型 (`socks5` \| `http` \| `https` \| `ss` \| `trojan` \| `vless`) |
+| `SOCKS_SERVER` | 家宽出口服务器 IP 或域名 |
+| `SOCKS_PORT` | 出口服务端口 |
+| `SOCKS_USERNAME` | 认证用户名 (可选) |
+| `SOCKS_PASSWORD` | 认证密码 (可选) |
 
 ---
 
-## 📡 API 路由与动态参数
+## API 路由与动态参数
 
 - **订阅转换端点**：`GET /sub`
   - `url`: 原始机场订阅 URL（需 URL 编码）
-  - `target`: 目标客户端 (`clash`, `singbox`, `surge`, `quanx`, `shadowrocket`)
+  - `target`: 目标客户端
   - `socks_type`: 出口协议类型 (`socks5`, `http`, `https`, `ss`, `trojan`, `vless`)
-  - `socks_server`: 家宽出口 IP/域名 (可选)
-  - `socks_port`: 家宽出口端口 (可选)
+  - `socks_server`: 家宽出口 IP/域名
+  - `socks_port`: 家宽出口端口
 
 ---
 
-## 🙏 致谢
+## 致谢
 
 - **[tindy2013/subconverter](https://github.com/tindy2013/subconverter)** -订阅转换工具与客户端转换
 - **[Metacubex/mihomo](https://github.com/Metacubex/mihomo)** - Clash Meta 内核
@@ -131,15 +126,14 @@ npx wrangler deploy
 
 ---
 
-## 📬 联系方式
+## 联系方式
 
-* ​**开发者**​: MareixHunk
 * ​**Email**​: [ceohunk@gmail.com](mailto:ceohunk@gmail.com)
 * ​**GitHub**​: [MareixHunk](https://github.com/Mareixcode)
 
 ---
 
-## 📄 开源协议
+## 开源协议
 
 本项目采用 [MIT License](LICENSE) 协议开源。
 
