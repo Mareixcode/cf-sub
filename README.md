@@ -4,14 +4,8 @@
   <a href="https://workers.cloudflare.com/" target="_blank">
     <img src="https://img.shields.io/badge/Cloudflare-Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
   </a>
-  <a href="https://www.typescriptlang.org/" target="_blank">
-    <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-4CAF50?style=flat-square&logo=open-source-initiative&logoColor=white" alt="License" />
-  </a>
-  <a href="https://github.com/Mareixcode/cf-sub">
-    <img src="https://img.shields.io/github/stars/Mareixcode/cf-sub?style=flat-square&logo=github" alt="GitHub Stars" />
   </a>
   <a href="https://github.com/Mareixcode/cf-sub/commits/main">
     <img src="https://img.shields.io/github/last-commit/Mareixcode/cf-sub?style=flat-square&logo=git&logoColor=white" alt="Last Commit" />
@@ -19,6 +13,8 @@
 </p>
 
 > 一个家宽链式代理节点注入工具
+> 
+> 演示站：**https://sub.iodevo.com**
 
 ---
 
@@ -86,13 +82,13 @@ npx wrangler deploy
 
 前往 Dashboard -> **Workers & Pages** -> 选择对应 Worker -> **Settings** -> **Variables**，添加以下环境变量：
 
-| 变量名 | 说明 |
-| :--- | :--- |
-| `SOCKS_TYPE` | 出口协议类型 (`socks5` \| `http` \| `https` \| `ss` \| `trojan` \| `vless`) |
-| `SOCKS_SERVER` | 家宽出口服务器 IP 或域名 |
-| `SOCKS_PORT` | 出口服务端口 |
-| `SOCKS_USERNAME` | 认证用户名 (可选) |
-| `SOCKS_PASSWORD` | 认证密码 (可选) |
+| 变量名           | 说明                                                                        |
+| :--------------- | :-------------------------------------------------------------------------- |
+| `SOCKS_TYPE`     | 出口协议类型 (`socks5` \| `http` \| `https` \| `ss` \| `trojan` \| `vless`) |
+| `SOCKS_SERVER`   | 家宽出口服务器 IP 或域名                                                    |
+| `SOCKS_PORT`     | 出口服务端口                                                                |
+| `SOCKS_USERNAME` | 认证用户名 (可选)                                                           |
+| `SOCKS_PASSWORD` | 认证密码 (可选)                                                             |
 
 ---
 
